@@ -37,7 +37,6 @@ import com.meisolsson.githubsdk.service.activity.StarringService;
 import com.meisolsson.githubsdk.service.activity.WatchingService;
 import com.meisolsson.githubsdk.service.repositories.RepositoryBranchService;
 import com.meisolsson.githubsdk.service.repositories.RepositoryService;
-import com.philosophicalhacker.lib.RxLoader;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -100,7 +99,6 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
     private List<Branch> mTags;
     private String mSelectedRef;
 
-    private RxLoader mRxLoader;
     private Boolean mIsWatching;
     private Boolean mIsStarring;
 
@@ -119,7 +117,6 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
 
         setContentShown(false);
 
-        mRxLoader = new RxLoader(this, getSupportLoaderManager());
         loadRepository(false);
         loadStarringState(false);
         loadWatchingState(false);
@@ -479,10 +476,8 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
         RepositoryService service = Gh4Application.get().getGitHubService(RepositoryService.class);
         service.getRepository(mRepoOwner, mRepoName)
                 .map(ApiHelpers::throwOnFailure)
-                .compose(RxUtils::doInBackground)
-                .compose(this::handleError)
                 .toObservable()
-                .compose(mRxLoader.makeObservableTransformer(ID_LOADER_REPO, force))
+                .compose(makeLoaderObservable(ID_LOADER_REPO, force))
                 .subscribe(result -> {
                     mRepository = result;
                     updateTitle();
@@ -505,14 +500,12 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
         StarringService service = app.getGitHubService(StarringService.class);
         service.checkIfRepositoryIsStarred(mRepoOwner, mRepoName)
                 .map(ApiHelpers::throwOnFailure)
-                .compose(RxUtils::doInBackground)
                 // success response means 'starred'
                 .map(result -> true)
                 // 404 means 'not starred'
                 .compose(RxUtils.mapFailureToValue(HttpURLConnection.HTTP_NOT_FOUND, false))
-                .compose(this::handleError)
                 .toObservable()
-                .compose(mRxLoader.makeObservableTransformer(ID_LOADER_STARRING, force))
+                .compose(makeLoaderObservable(ID_LOADER_STARRING, force))
                 .subscribe(result -> {
                     mIsStarring = result;
                     supportInvalidateOptionsMenu();
@@ -527,13 +520,11 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
         WatchingService service = app.getGitHubService(WatchingService.class);
         service.getRepositorySubscription(mRepoOwner, mRepoName)
                 .map(ApiHelpers::throwOnFailure)
-                .compose(RxUtils::doInBackground)
-                .compose(this::handleError)
                 .map(subscription -> subscription.subscribed())
                 // 404 means 'not subscribed'
                 .compose(RxUtils.mapFailureToValue(HttpURLConnection.HTTP_NOT_FOUND, false))
                 .toObservable()
-                .compose(mRxLoader.makeObservableTransformer(ID_LOADER_WATCHING, force))
+                .compose(makeLoaderObservable(ID_LOADER_WATCHING, force))
                 .subscribe(result -> {
                     mIsWatching = result;
                     supportInvalidateOptionsMenu();
