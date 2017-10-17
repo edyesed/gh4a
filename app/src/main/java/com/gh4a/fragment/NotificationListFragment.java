@@ -237,7 +237,7 @@ public class NotificationListFragment extends LoadingListFragmentBase implements
                 Gh4Application.get().getGitHubService(NotificationService.class);
 
         service.setNotificationThreadSubscription(notification.id(), false, true)
-                    .compose(RxUtils::throwOnFailure)
+                    .map(ApiHelpers::throwOnFailure)
                     .compose(RxUtils::doInBackground)
                     .subscribe(result -> handleMarkAsRead(null, notification));
     }
@@ -296,7 +296,7 @@ public class NotificationListFragment extends LoadingListFragmentBase implements
             }
         }
 
-        responseSingle.compose(RxUtils::throwOnFailure)
+        responseSingle.map(ApiHelpers::throwOnFailure)
                 .compose(RxUtils::doInBackground)
                 .subscribe(result -> handleMarkAsRead(repository, notification), error -> {});
     }
