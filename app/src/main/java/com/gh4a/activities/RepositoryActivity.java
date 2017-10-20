@@ -33,6 +33,7 @@ import com.gh4a.utils.RxUtils;
 import com.gh4a.utils.UiUtils;
 import com.meisolsson.githubsdk.model.Branch;
 import com.meisolsson.githubsdk.model.Repository;
+import com.meisolsson.githubsdk.model.Subscription;
 import com.meisolsson.githubsdk.service.activity.StarringService;
 import com.meisolsson.githubsdk.service.activity.WatchingService;
 import com.meisolsson.githubsdk.service.repositories.RepositoryBranchService;
@@ -518,7 +519,7 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
         WatchingService service = app.getGitHubService(WatchingService.class);
         service.getRepositorySubscription(mRepoOwner, mRepoName)
                 .map(ApiHelpers::throwOnFailure)
-                .map(subscription -> subscription.subscribed())
+                .map(Subscription::subscribed)
                 // 404 means 'not subscribed'
                 .compose(RxUtils.mapFailureToValue(HttpURLConnection.HTTP_NOT_FOUND, false))
                 .compose(makeLoaderSingle(ID_LOADER_WATCHING, force))
@@ -542,7 +543,7 @@ public class RepositoryActivity extends BaseFragmentPagerActivity {
             Single<List<Branch>> tagSingle = ApiHelpers.PageIterator
                     .toSingle(page -> repoService.getTags(mRepoOwner, mRepoName, page));
 
-            registerTemporarySubscription(Single.zip(branchSingle, tagSingle, (branches, tags) -> Pair.create(branches, tags))
+            registerTemporarySubscription(Single.zip(branchSingle, tagSingle, Pair::create)
                     .compose(RxUtils::doInBackground)
                     .compose(RxUtils.wrapWithProgressDialog(this, R.string.loading_msg))
                     .subscribe(result -> {
