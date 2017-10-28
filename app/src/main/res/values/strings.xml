@@ -415,6 +415,7 @@
     <string name="pull_request_title">Pull Request</string>
     <string name="review_title_format">Pull Request #%1$d - Review</string>
     <string name="pull_request_conversation">Conversation</string>
+    <string name="pull_request_add_review">Reviews</string>
     <string name="pull_request_files">Files</string>
     <string name="pull_requests">Pull Requests</string>
     <string name="pull_requests_open">Open Pull Requests</string>
@@ -446,6 +447,16 @@
     <string name="close_pull_request_confirm">Do you really want to close this pull request?</string>
     <string name="reopen_pull_request_confirm">Do you really want to reopen this pull request?</string>
     <string name="pull_request_edit_title">Edit Pull Request #%1$d</string>
+    <string name="pull_request_review_dialog_title">Review pull request #%1$d</string>
+    <string name="pull_request_review_event">Review type</string>
+    <string name="pull_request_review_event_comment">Comment</string>
+    <string name="pull_request_review_event_approve">Approve</string>
+    <string name="pull_request_review_event_requestchanges">Request Changes</string>
+    <string name="pull_request_review_body">Review Summary</string>
+    <string name="pull_request_review_description">Leave a comment about this review below.</string>
+    <string name="pull_request_review_button_affirm">Comment</string>
+
+
 
     <!-- Object -->
     <string name="object_view_file_at">View file @ %1$s</string>

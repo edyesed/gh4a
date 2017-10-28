@@ -5,6 +5,11 @@
         android:id="@+id/pull_merge"
         android:title="@string/pull_request_merge"
         app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/pull_review"
+        android:title="Review Changes"
+        app:showAsAction="ifRoom|withText" />
+
 
     <item
         android:id="@+id/pull_reopen"

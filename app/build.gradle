@@ -1,6 +1,7 @@
 def taskRequests = getGradle().getStartParameter().getTaskRequests().toString()
 def isPlaystore = taskRequests.contains("Playstore") || taskRequests.contains("playstore")
 
+
 buildscript {
     repositories {
         maven { url 'https://maven.fabric.io/public' }
@@ -29,7 +30,7 @@ android {
         playStore
     }
     compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    buildToolsVersion '26.0.2'
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
@@ -49,6 +50,9 @@ android {
             signingConfig signingConfigs.playStore
         }
     }
+
+    // ok
+    flavorDimensions "playstore"
 
     productFlavors {
         // includes proprietary libs
