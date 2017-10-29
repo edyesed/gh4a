@@ -243,7 +243,6 @@ public class PullRequestService extends GitHubService {
 		return params;
 	}
 
-	/* ED ED */
     private Map<String, String> createPrReviewMap(Review request) {
         Map<String, String> params = new HashMap<String, String>();
         if (request != null) {
@@ -256,7 +255,6 @@ public class PullRequestService extends GitHubService {
         }
         return params;
     }
-    /* ED ED */
 
 	private Map<String, String> editPrMap(PullRequest request) {
 		Map<String, String> params = new HashMap<String, String>();
@@ -300,7 +298,6 @@ public class PullRequestService extends GitHubService {
 	 * @return created pull request review
 	 * @throws IOException
 	 */
-	 /* ED ED */
 	public Review createPullRequestReview(IRepositoryIdProvider repository,
 			int pullRequestId, String reviewEvent, String reviewMessage) throws IOException {
 		String id = getId(repository);
@@ -311,10 +308,8 @@ public class PullRequestService extends GitHubService {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("event", reviewEvent);
 		params.put("body", reviewMessage);
-		//Map<String, String> params = createPrReviewMap();
 		return client.post(uri.toString(), params, Review.class);
 	}
-	 /* ED ED */
 
 	/**
 	 * Create pull request by attaching branch information to an existing issue
