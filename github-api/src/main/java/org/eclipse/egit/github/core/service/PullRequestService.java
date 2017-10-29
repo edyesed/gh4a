@@ -301,7 +301,7 @@ public class PullRequestService extends GitHubService {
 	 * @throws IOException
 	 */
 	 /* ED ED */
-	public PullRequest createPullRequestReview(IRepositoryIdProvider repository,
+	public Review createPullRequestReview(IRepositoryIdProvider repository,
 			int pullRequestId, String reviewEvent, String reviewMessage) throws IOException {
 		String id = getId(repository);
 
@@ -312,7 +312,7 @@ public class PullRequestService extends GitHubService {
 		params.put("event", reviewEvent);
 		params.put("body", reviewMessage);
 		//Map<String, String> params = createPrReviewMap();
-		return client.post(uri.toString(), params, PullRequest.class);
+		return client.post(uri.toString(), params, Review.class);
 	}
 	 /* ED ED */
 

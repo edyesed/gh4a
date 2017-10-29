@@ -11,6 +11,7 @@
     <string name="closing_msg">Closing\u2026</string>
     <string name="opening_msg">Opening\u2026</string>
     <string name="merging_msg">Merging\u2026</string>
+    <string name="reviewing_msg">Adding Review\u2026</string>
     <string name="authenticating">Authenticating\u2026</string>
     <string name="search">Search</string>
     <string name="search_code">Search code</string>
@@ -455,6 +456,8 @@
     <string name="pull_request_review_body">Review Summary</string>
     <string name="pull_request_review_description">Leave a comment about this review below.</string>
     <string name="pull_request_review_button_affirm">Comment</string>
+    <string name="pull_request_review_error">Adding review to pull request #%1$d failed.</string>
+
 
 
 

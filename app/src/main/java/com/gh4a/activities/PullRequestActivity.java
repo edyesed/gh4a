@@ -51,6 +51,7 @@ import com.gh4a.loader.IssueLoader;
 import com.gh4a.loader.LoaderCallbacks;
 import com.gh4a.loader.LoaderResult;
 import com.gh4a.loader.PullRequestLoader;
+import com.gh4a.loader.ReviewLoader;
 import com.gh4a.loader.ReferenceLoader;
 import com.gh4a.resolver.PullRequestReviewLoadTask;
 import com.gh4a.utils.ApiHelpers;
@@ -65,12 +66,14 @@ import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.Reference;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.Review;
 import org.eclipse.egit.github.core.TypedResource;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.DataService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class PullRequestActivity extends BaseFragmentPagerActivity implements
@@ -102,10 +105,14 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
     private IntentUtils.InitialCommentMarker mInitialComment;
     private Boolean mIsCollaborator;
 
+    private int mReviewNumber;
+
     private Issue mIssue;
     private PullRequest mPullRequest;
     private PullRequestFragment mPullRequestFragment;
     private IssueStateTrackingFloatingActionButton mEditFab;
+    private Review mReview;
+
 
     private ViewGroup mHeader;
     private int[] mHeaderColorAttrs;
@@ -160,6 +167,24 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
         }
     };
 
+
+    private final LoaderCallbacks<Review> mReviewCallback = new LoaderCallbacks<Review>(this) {
+        @Override
+        protected Loader<LoaderResult<Review>> onCreateLoader() {
+            return new ReviewLoader( PullRequestActivity.this,
+                    mRepoOwner, mRepoName, mPullRequestNumber, mReviewNumber);
+        }
+
+        @Override
+        protected void onResultReady(Review result) {
+            mReview = result;
+            //fillheader();
+            showContentIfReady();
+            supportInvalidateOptionsMenu();
+        }
+    };
+
+
     private final LoaderCallbacks<Issue> mIssueCallback = new LoaderCallbacks<Issue>(this) {
         @Override
         protected Loader<LoaderResult<Issue>> onCreateLoader() {
@@ -208,6 +233,7 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
         getSupportLoaderManager().initLoader(0, null, mPullRequestCallback);
         getSupportLoaderManager().initLoader(1, null, mIssueCallback);
         getSupportLoaderManager().initLoader(2, null, mCollaboratorCallback);
+        //getSupportLoaderManager().initLoader(3, null, mReviewCallback);
     }
 
     @Override
@@ -688,43 +714,40 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
     }
 
 
-    private class PullRequestReviewTask extends ProgressDialogTask<PullRequest> {
+    private class PullRequestReviewTask extends ProgressDialogTask<Review> {
         private final String mReviewMessage;
         private final String mReviewEvent;
 
         public PullRequestReviewTask(String reviewMessage, String reviewEvent) {
-            super(getBaseActivity(), R.string.merging_msg);
+            super(getBaseActivity(), R.string.reviewing_msg);
             mReviewMessage = reviewMessage;
             mReviewEvent = reviewEvent;
         }
 
         @Override
-        protected ProgressDialogTask<PullRequest> clone() {
+        protected ProgressDialogTask<Review> clone() {
             return new PullRequestReviewTask(mReviewMessage, mReviewEvent);
         }
 
         @Override
-        protected PullRequest run() throws Exception {
+        protected Review run() throws Exception {
             PullRequestService pullService = (PullRequestService)
                     Gh4Application.get().getService(Gh4Application.PULL_SERVICE);
             RepositoryId repoId = new RepositoryId(mRepoOwner, mRepoName);
-
-            return pullService.createPullRequestReview(repoId, mPullRequest.getNumber(), mReviewEvent, mReviewMessage);
+            mReview = pullService.createPullRequestReview(repoId, mPullRequest.getNumber(), mReviewEvent, mReviewMessage);
+            return mReview;
         }
 
+        /* There's nothing to be done on success */
         @Override
-        protected void onSuccess(PullRequest result) {
-
-            if (result.isMerged()) {
-                mPullRequest.setMerged(true);
-                mPullRequest.setState(ApiHelpers.IssueState.CLOSED);
-            }
-            handlePullRequestUpdate();
+        protected void onSuccess(Review result) {
+            mReview = result;
         }
 
         @Override
         protected String getErrorMessage() {
-            return getContext().getString(R.string.pull_error_merge, mPullRequest.getNumber());
+            /* How do you get at the response/result of pullService.createPullRequestReview ?? */
+            return getContext().getString(R.string.pull_request_review_error, mPullRequest.getNumber());
         }
     }
 
