@@ -65,7 +65,13 @@ public class PullRequestService extends GitHubService {
 	 */
 	public static final String PR_BODY = "body"; //$NON-NLS-1$
 
-	/**
+    /**
+     * PR_EVENT
+     */
+    public static final String PR_EVENT = "event"; //$NON-NLS-1$
+
+
+    /**
 	 * PR_BASE
 	 */
 	public static final String PR_BASE = "base"; //$NON-NLS-1$
@@ -86,6 +92,14 @@ public class PullRequestService extends GitHubService {
 	public static final String MERGE_METHOD_MERGE = "merge";
 	public static final String MERGE_METHOD_SQUASH = "squash";
 	public static final String MERGE_METHOD_REBASE = "rebase";
+
+	/**
+	 * Merge methods for the {@link review} method
+	 */
+	public static final String REVIEW_EVENT_APPROVE = "APPROVE";
+	public static final String REVIEW_EVENT_REQUEST_CHANGES = "REQUEST_CHANGES";
+	public static final String REVIEW_EVENT_COMMENT = "COMMENT";
+
 
 	/**
 	 * Create pull request service
@@ -229,6 +243,21 @@ public class PullRequestService extends GitHubService {
 		return params;
 	}
 
+	/* ED ED */
+    private Map<String, String> createPrReviewMap(Review request) {
+        Map<String, String> params = new HashMap<String, String>();
+        if (request != null) {
+            String body = request.getBody();
+            if (body != null)
+                params.put(PR_BODY, body);
+            String event = request.getEvent();
+            if (event != null)
+                params.put(PR_EVENT, event);
+        }
+        return params;
+    }
+    /* ED ED */
+
 	private Map<String, String> editPrMap(PullRequest request) {
 		Map<String, String> params = new HashMap<String, String>();
 		String title = request.getTitle();
@@ -261,6 +290,31 @@ public class PullRequestService extends GitHubService {
 		Map<String, String> params = createPrMap(request);
 		return client.post(uri.toString(), params, PullRequest.class);
 	}
+
+	/**
+	 * Create pull request review
+	 *
+	 * @param repository
+	 * @param request
+	 * @param
+	 * @return created pull request review
+	 * @throws IOException
+	 */
+	 /* ED ED */
+	public PullRequest createPullRequestReview(IRepositoryIdProvider repository,
+			int pullRequestId, String reviewEvent, String reviewMessage) throws IOException {
+		String id = getId(repository);
+
+		StringBuilder uri = new StringBuilder(SEGMENT_REPOS);
+		uri.append('/').append(id);
+		uri.append(SEGMENT_PULLS).append('/').append(pullRequestId).append(SEGMENT_REVIEWS);
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("event", reviewEvent);
+		params.put("body", reviewMessage);
+		//Map<String, String> params = createPrReviewMap();
+		return client.post(uri.toString(), params, PullRequest.class);
+	}
+	 /* ED ED */
 
 	/**
 	 * Create pull request by attaching branch information to an existing issue
@@ -403,6 +457,8 @@ public class PullRequestService extends GitHubService {
 		StringBuilder uri = new StringBuilder(SEGMENT_REPOS);
 		uri.append('/').append(repoId);
 		uri.append(SEGMENT_PULLS);
+
+
 		uri.append('/').append(id);
 		uri.append(SEGMENT_MERGE);
 

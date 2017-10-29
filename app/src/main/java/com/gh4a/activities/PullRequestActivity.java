@@ -52,6 +52,7 @@ import com.gh4a.loader.LoaderCallbacks;
 import com.gh4a.loader.LoaderResult;
 import com.gh4a.loader.PullRequestLoader;
 import com.gh4a.loader.ReferenceLoader;
+import com.gh4a.resolver.PullRequestReviewLoadTask;
 import com.gh4a.utils.ApiHelpers;
 import com.gh4a.utils.IntentUtils;
 import com.gh4a.utils.UiUtils;
@@ -497,11 +498,11 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
         final ArrayAdapter<ReviewEventDesc> adapter = new ArrayAdapter<>(this,
                 R.layout.pull_merge_method_item);
         adapter.add(new ReviewEventDesc(R.string.pull_request_review_event_comment,
-                PullRequestService.MERGE_METHOD_MERGE));
+                PullRequestService.REVIEW_EVENT_COMMENT));
         adapter.add(new ReviewEventDesc(R.string.pull_request_review_event_approve,
-                PullRequestService.MERGE_METHOD_SQUASH));
+                PullRequestService.REVIEW_EVENT_APPROVE));
         adapter.add(new ReviewEventDesc(R.string.pull_request_review_event_requestchanges,
-                PullRequestService.MERGE_METHOD_REBASE));
+                PullRequestService.REVIEW_EVENT_REQUEST_CHANGES));
 
         final Spinner reviewEvent = view.findViewById(R.id.pull_request_review_event);
         reviewEvent.setAdapter(adapter);
@@ -527,7 +528,8 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
                         String text = editor.getText() == null ? null : editor.getText().toString();
                         int methodIndex = reviewEvent.getSelectedItemPosition();
                         String method = adapter.getItem(methodIndex).action;
-                        new PullRequestMergeTask(text, method).schedule();
+                        new PullRequestReviewTask(text, method).schedule();
+                        //new PullRequestMergeTask(text, method).schedule();
                     }
                 })
                 .setNegativeButton(getString(R.string.cancel), null)
@@ -684,4 +686,46 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
             return getContext().getString(R.string.pull_error_merge, mPullRequest.getNumber());
         }
     }
+
+
+    private class PullRequestReviewTask extends ProgressDialogTask<PullRequest> {
+        private final String mReviewMessage;
+        private final String mReviewEvent;
+
+        public PullRequestReviewTask(String reviewMessage, String reviewEvent) {
+            super(getBaseActivity(), R.string.merging_msg);
+            mReviewMessage = reviewMessage;
+            mReviewEvent = reviewEvent;
+        }
+
+        @Override
+        protected ProgressDialogTask<PullRequest> clone() {
+            return new PullRequestReviewTask(mReviewMessage, mReviewEvent);
+        }
+
+        @Override
+        protected PullRequest run() throws Exception {
+            PullRequestService pullService = (PullRequestService)
+                    Gh4Application.get().getService(Gh4Application.PULL_SERVICE);
+            RepositoryId repoId = new RepositoryId(mRepoOwner, mRepoName);
+
+            return pullService.createPullRequestReview(repoId, mPullRequest.getNumber(), mReviewEvent, mReviewMessage);
+        }
+
+        @Override
+        protected void onSuccess(PullRequest result) {
+
+            if (result.isMerged()) {
+                mPullRequest.setMerged(true);
+                mPullRequest.setState(ApiHelpers.IssueState.CLOSED);
+            }
+            handlePullRequestUpdate();
+        }
+
+        @Override
+        protected String getErrorMessage() {
+            return getContext().getString(R.string.pull_error_merge, mPullRequest.getNumber());
+        }
+    }
+
 }
