@@ -118,7 +118,7 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
     private int[] mHeaderColorAttrs;
 
     private static final int[] TITLES = new int[]{
-            R.string.pull_request_conversation, R.string.commits, R.string.pull_request_files, R.string.pull_request_add_review
+            R.string.pull_request_conversation, R.string.commits, R.string.pull_request_files
     };
 
     private class MergeMethodDesc {
@@ -518,7 +518,7 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
 
         final View editorNotice = view.findViewById(R.id.notice);
         final EditText editor = view.findViewById(R.id.et_commit_message);
-        editor.setText(mPullRequest.getTitle());
+        editor.setText("");
 
 
         final ArrayAdapter<ReviewEventDesc> adapter = new ArrayAdapter<>(this,
@@ -535,7 +535,7 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
         reviewEvent.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                int editorVisibility = position == 2 ? View.GONE : View.VISIBLE;
+                int editorVisibility = View.VISIBLE;
                 editorNotice.setVisibility(editorVisibility);
                 editor.setVisibility(editorVisibility);
             }
@@ -555,7 +555,6 @@ public class PullRequestActivity extends BaseFragmentPagerActivity implements
                         int methodIndex = reviewEvent.getSelectedItemPosition();
                         String method = adapter.getItem(methodIndex).action;
                         new PullRequestReviewTask(text, method).schedule();
-                        //new PullRequestMergeTask(text, method).schedule();
                     }
                 })
                 .setNegativeButton(getString(R.string.cancel), null)
